@@ -11,7 +11,7 @@
 * [Architecture](architecture.md)
 * [External Authentication (httpd)](external_auth.md)
 * [REST API](rest_api.md)
-* [UI Notes](un_notes.md)
+* [UI Notes](ui_notes.md)
 
 ## License
 
