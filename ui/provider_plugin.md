@@ -15,9 +15,12 @@ be collected using a custom form.
 
 ### Extending the toolbars
 
-Providers can add new button groups to existing [toolbars](toolbars.md). Specificaly the "Center toolbars" can be extended this way. Currently toolbar extensions can add new `button_group`s to the toolbar.
+Providers can add new button groups to existing [toolbars](toolbars.md).
+Specificaly the "Center toolbars" can be extended this way. Currently toolbar
+extensions can add new `button_group`s to the toolbar.
 
-On top of what is documented in the [toolbars](toolbars.md) page providers can specify what Dialog has to be displayed then a toolbar button is pressed.
+On top of what is documented in the [toolbars](toolbars.md) page providers can
+specify what form has to be displayed then a toolbar button is pressed.
 
 ```ruby
 module ManageIQ
@@ -45,9 +48,12 @@ module ManageIQ
 end
 ```
 
-Above is an exampe where provider `ManageIQ::Providers::Amazon` is extending existing toolbar `EmsCloudCenter`with a new group containing a single button.
+Above is an exampe where provider `ManageIQ::Providers::Amazon` is extending
+existing toolbar `EmsCloudCenter`with a new group containing a single button.
 
-When the button is pressed, a modal will be opened with a form implemented as a React class named `CreateAmazonSecurityGroupForm`. The title of the modal will be `Create a Security Group`.
+When the button is pressed, a modal will be opened with a form implemented as a
+React class named `CreateAmazonSecurityGroupForm`. The title of the modal will
+be `Create a Security Group`.
 
 ### Creating Forms
 
@@ -112,4 +118,57 @@ When a user clicks this button a series of actions happens.
 3. User interacts with the form.
 4. If Ok was pressed by the user an API call is made by POST to `/api/<entity_name>` and `{ action: <action_name> }`. Serialized data from the form are passed in `data` key.
 5. If the call is successfull the `:success_message` is displayed as a flash message. Otherwise an error message is displayed.
+
+
+### API Only Buttons
+
+In some cases it might be enough to just fire an action when a button is
+pressed. W/o any additional information from the user.
+
+Below is an example button that does just that.
+
+```ruby
+module ManageIQ
+  module Providers
+    module Amazon
+      module ToolbarOverrides
+        class EmsCloudCenter < ::ApplicationHelper::Toolbar::Override
+          button_group('magic', [
+            button(
+              :magic_api,
+              'fa fa-magic fa-lg',
+              t = N_('API call'),
+              t,
+              :data  => {'function'      => 'sendDataWithRx',
+                         'function-data' => {:controller      => 'provider_dialogs', # this one is required
+                                             :button          => :magic_api,
+                                             :success_message => N_('API succesfully called'),
+                                             :entity_name     => 'provider',
+                                             :action_name     => 'foobar'}.to_json},
+              :klass => ApplicationHelper::Button::ButtonWithoutRbacCheck),
+          ])
+        end
+      end
+    end
+  end
+end
+```
+
+When a user clicks this button an API call is made to `/api/provider` with data
+`{action: foobar}`. If no immediate error occures a flash message saying "API
+succesfully called" is displayed.
+
+
+### Notes
+
+##### RBAC
+Displaying of individual buttons in toolbars is driven by RBAC. Each button can
+have an RBAC feature assigned to it. For simplicity this is supressed in the
+above examples by using the `ApplicationHelper::Button::ButtonWithoutRbacCheck`
+as the class for the buttons. But generally RBAC features can be specified and
+will be checked as with any other button. For details see [RBAC
+feature](rbac_features.md) and [Toolbars](toolbars.md).
+
+##### Notifications
+FIXME: Notifications: we need a notification example here.
 
